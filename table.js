@@ -1,5 +1,5 @@
 
-
+var rownum = 0;
 function initialiseTable(header_names){
     var table =  document.getElementById('table_id');
     const body = document.body;
@@ -41,16 +41,35 @@ function deleteRow(btn) {
 
 function selectchange(x){
 
-    console.log("hello",x.target.parentNode);
+    let dropvalue = x.target.value;
+    let selectrow = x.target.parentNode.parentNode;
+    let rindex = selectrow.rowIndex;
+    console.log(dropvalue);
+    console.log(selectrow);
+    console.log(rindex);
+    for(const prop in info){
+        delon = info[prop]['deleteOn']
+        if(typeof(delon) != 'undefined'){
+            let parent_elem = document.getElementById(`${prop}_${rindex}`);
+            let child_elem = parent_elem.querySelector('input')
+            child_elem.removeAttribute("disabled");
+            if(delon.includes(dropvalue)){
+                console.log(prop,delon)
+                console.log('-----')
+                console.log(child_elem)
+                child_elem.setAttribute("disabled", true);
+            }
+        }
+    }
 }
 
 function addRow(){
     info = {
 
-        s_no : {header_name:'S_NO',type:'input'},
-        date : {header_name:'DATE',type:'input'},
+        s_no : {header_name:'S_NO',type:'input',deleteOn:["p1"]},
+        date : {header_name:'DATE',type:'input',deleteOn:["p3"]},
         product :{header_name:'PRODUCT',type:"select",options:["p1","p2","p3"]},
-        client : {header_name:'CLIENT',type:"input"},
+        client : {header_name:'CLIENT',type:"input",deleteOn:["p1","p2"]},
         delete_btn:{type:'button'}
    
    }
@@ -63,9 +82,11 @@ function addRow(){
     let tableRef = document.getElementById("table_id");
   
     let newRow = tableRef.insertRow()
+    newRow.setAttribute("id",`tr_${rownum}`);
 
     for(const prop in info){
         let newCell = newRow.insertCell();
+        newCell.setAttribute("id",`${prop}_${rownum}`);
         type = info[prop]['type']
         if (type == 'input'){
             var textelem = document.createElement("input");
@@ -105,7 +126,7 @@ function addRow(){
      
     }
     
-
+    rownum++;
 
 }
 
