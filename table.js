@@ -43,14 +43,14 @@ function selectchange(x){
 
     let dropvalue = x.target.value;
     let selectrow = x.target.parentNode.parentNode;
-    let rindex = selectrow.rowIndex;
+    let rindex = selectrow.id
     console.log(dropvalue);
     console.log(selectrow);
-    console.log(rindex);
+    console.log("rindex",rindex);
     for(const prop in info){
         delon = info[prop]['deleteOn']
         if(typeof(delon) != 'undefined'){
-            let parent_elem = document.getElementById(`${prop}_${rindex}`);
+            let parent_elem = document.getElementById(`${rindex}_${prop}`);
             let child_elem = parent_elem.querySelector('input')
             child_elem.removeAttribute("disabled");
             if(delon.includes(dropvalue)){
@@ -86,7 +86,7 @@ function addRow(){
 
     for(const prop in info){
         let newCell = newRow.insertCell();
-        newCell.setAttribute("id",`${prop}_${rownum}`);
+        newCell.setAttribute("id",`tr_${rownum}_${prop}`);
         type = info[prop]['type']
         if (type == 'input'){
             var textelem = document.createElement("input");
