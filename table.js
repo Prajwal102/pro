@@ -1,13 +1,58 @@
 
 var rownum = 0;
+// document.body.addEventListener( 'change', function ( event ) {
+//     console.log("change listener")
+//     console.log(event.target);
+//   } );
+
+function download_table_as_csv(table_id, separator = ',') {
+    // Select rows from table_id
+    var csv = [];
+    var row = []
+    var rows = document.querySelectorAll('#' + table_id + ' tr');
+    var headerrows = document.querySelectorAll('#' + table_id + ' th');
+    for (var i = 0; i < headerrows.length; i++) {
+        hname = headerrows[i].innerHTML;
+        row.push('"' + hname + '"');
+    }
+    csv.push(row.join(separator));
+    
+    // Construct csv
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll('th, td');
+       
+        for (var j = 0; j < cols.length-1; j++) {
+            let colval = cols[j].firstChild.value;
+            // Clean innertext to remove multiple spaces and jumpline (break csv)
+            var data = colval.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
+            // Escape double-quote with double-double-quote
+            data = data.replace(/"/g, '""');
+            // Push escaped string
+            row.push('"' + data + '"');
+        }
+        csv.push(row.join(separator));
+    }
+    var csv_string = csv.join('\n');
+    console.log(csv)
+    console.log(csv_string)
+    // Download it
+    var filename = 'export_' + table_id + '_' + new Date().toLocaleDateString() + '.csv';
+    var link = document.createElement('a');
+    link.style.display = 'none';
+    link.setAttribute('target', '_blank');
+    link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 function initialiseTable(header_names){
     var table =  document.getElementById('table_id');
-    const body = document.body;
+    const body = document.querySelector('.table_class');
     if (typeof(table) == 'undefined' || table == null)
     {
-
-        console.log("inside")
-
         var table = document.createElement('table');
         table.setAttribute('id', 'table_id');
         var thead = document.createElement('thead');
@@ -18,7 +63,7 @@ function initialiseTable(header_names){
             thead.appendChild(document.createElement("th")).
                 appendChild(document.createTextNode(header_names[i]));
         }
-        body.appendChild(table);
+        body.append(table);
     }
 }
 
@@ -44,9 +89,6 @@ function selectchange(x){
     let dropvalue = x.target.value;
     let selectrow = x.target.parentNode.parentNode;
     let rindex = selectrow.id
-    console.log(dropvalue);
-    console.log(selectrow);
-    console.log("rindex",rindex);
     for(const prop in info){
         delon = info[prop]['deleteOn']
         if(typeof(delon) != 'undefined'){
@@ -54,9 +96,6 @@ function selectchange(x){
             let child_elem = parent_elem.querySelector('input')
             child_elem.removeAttribute("disabled");
             if(delon.includes(dropvalue)){
-                console.log(prop,delon)
-                console.log('-----')
-                console.log(child_elem)
                 child_elem.setAttribute("disabled", true);
             }
         }
@@ -66,17 +105,19 @@ function selectchange(x){
 function addRow(){
     info = {
 
-        s_no : {header_name:'S_NO',type:'input',deleteOn:["p1"]},
-        date : {header_name:'DATE',type:'input',deleteOn:["p3"]},
-        product :{header_name:'PRODUCT',type:"select",options:["p1","p2","p3"]},
-        client : {header_name:'CLIENT',type:"input",deleteOn:["p1","p2"]},
+        tablename : {header_name:'Table Name',type:'input',deleteOn:[]},
+        data_source : {header_name:'Data Source',type:'input',deleteOn:["replace"]},
+        ta :{header_name:'Therapeutic Area',type:"input",deleteOn:["append"]},
+        disease_area :{header_name:'Disease Area',type:"input",deleteOn:["delete"]},
+        transfer_type :{header_name:'Transfer Type',type:"select",options:["replace","new","append","recreate","delete"],default_message:"Select Transfer Type"},
+        delim :{header_name:'Delimiter',type:"select",options:["|",",","\\001"],default_message:"Select Delimiter"},
+        date_range : {header_name:'Date Range',type:"input",deleteOn:["new","append"]},
         delete_btn:{type:'button'}
    
    }
 
     header_names = gettableHeaders(info);
 
-    console.log("clicked")
     initialiseTable(header_names);
 
     let tableRef = document.getElementById("table_id");
@@ -91,13 +132,23 @@ function addRow(){
         if (type == 'input'){
             var textelem = document.createElement("input");
             textelem.setAttribute('type', 'text');
+            textelem.setAttribute("disabled", true);
             newCell.appendChild(textelem);
         }
         else if(type == 'select'){
             let options = info[prop]['options']
+            let default_message = info[prop]['default_message']
             var selectList = document.createElement("select");
+            selectList.setAttribute("class", "form-select");
+            
             selectList.addEventListener('change',selectchange);
             newCell.appendChild(selectList);
+            var option = document.createElement("option");
+            option.text = default_message;
+            option.setAttribute('disabled', 'true');
+            option.setAttribute('selected', 'true');
+            selectList.appendChild(option);
+            // <option value="" disabled selected>Select your option</option>
             for (var i = 0; i < options.length; i++) {
                 var option = document.createElement("option");
                 option.value = options[i];
@@ -105,11 +156,13 @@ function addRow(){
                 selectList.appendChild(option);
             }
         }
-        else if(type == 'button'){
+        else if(type == 'button'){ // hardcoded only for delete button
             var delete_btn = document.createElement("input")
             delete_btn.setAttribute("type","button");
-            delete_btn.setAttribute("value","DELETE ROW");
-            delete_btn.setAttribute("name","deleterow");
+            delete_btn.setAttribute("value","DELETE");
+            delete_btn.setAttribute("id", "del_btn");
+            delete_btn.setAttribute("class", "btn btn-danger");
+
             delete_btn.onclick = function(){
                 var row = this.parentNode.parentNode;
                 row.parentNode.removeChild(row);

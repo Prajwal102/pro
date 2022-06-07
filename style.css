@@ -1,0 +1,39 @@
+h1 {
+    border: 2px #eee solid;
+    color: brown;
+    text-align: center;
+    padding: 10px;
+}
+
+
+.btn_div{
+    margin-top: 30px;
+}
+
+
+.addrow{
+    padding: 5px;
+    display: inline-block;
+}
+
+.dwnld{
+    padding: 5px;
+    display: inline-block;
+}
+
+#table_id{
+    padding:10px;
+}
+
+
+#del_btn{
+    width: 91px;
+    height: 27px;
+    font-size: 10px;
+    font-weight: bold;
+  
+}
+
+input{
+    width:160px;
+}
