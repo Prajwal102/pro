@@ -8,7 +8,8 @@ var rownum = 0;
 function download_table_as_csv(table_id, separator = ',') {
     // Select rows from table_id
     var csv = [];
-    var row = []
+    var row = [];
+    var tablenames = [];
     var rows = document.querySelectorAll('#' + table_id + ' tr');
     var headerrows = document.querySelectorAll('#' + table_id + ' th');
     for (var i = 0; i < headerrows.length; i++) {
@@ -23,10 +24,18 @@ function download_table_as_csv(table_id, separator = ',') {
         var row = [], cols = rows[i].querySelectorAll('th, td');
        
         for (var j = 0; j < cols.length-1; j++) {
-            console.log(cols[j].firstChild);
-            let colprop= cols[j].firstChild.value;
+
             let colval = cols[j].firstChild.value;
-            if (colprop == "transfer_type" && colval === "-1"){
+            if(j==0){
+                if(tablenames.includes(colval)){
+                    alert(`Duplicate tablename ${colval}`);
+                    return;
+                }
+                else{
+                    tablenames.push(colval);
+                }
+            }
+            if ( colval === "transfer_not_selected"){
                 row = [];
                 break;
             }
@@ -153,9 +162,9 @@ function addRow(){
             option.text = default_message;
             option.setAttribute('disabled', 'true');
             option.setAttribute('selected', 'true');
-            option.setAttribute("value","-1");
+            
             if(prop == 'transfer_type'){
-                option.setAttribute("name","transfer_type");
+                option.setAttribute("value","transfer_not_selected");
             }
             selectList.appendChild(option);
             // <option value="" disabled selected>Select your option</option>
