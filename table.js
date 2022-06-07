@@ -23,7 +23,13 @@ function download_table_as_csv(table_id, separator = ',') {
         var row = [], cols = rows[i].querySelectorAll('th, td');
        
         for (var j = 0; j < cols.length-1; j++) {
+            console.log(cols[j].firstChild);
+            let colprop= cols[j].firstChild.value;
             let colval = cols[j].firstChild.value;
+            if (colprop == "transfer_type" && colval === "-1"){
+                row = [];
+                break;
+            }
             // Clean innertext to remove multiple spaces and jumpline (break csv)
             var data = colval.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
             // Escape double-quote with double-double-quote
@@ -31,7 +37,7 @@ function download_table_as_csv(table_id, separator = ',') {
             // Push escaped string
             row.push('"' + data + '"');
         }
-        csv.push(row.join(separator));
+        if(row.length >0){csv.push(row.join(separator));}
     }
     var csv_string = csv.join('\n');
     console.log(csv)
@@ -147,6 +153,10 @@ function addRow(){
             option.text = default_message;
             option.setAttribute('disabled', 'true');
             option.setAttribute('selected', 'true');
+            option.setAttribute("value","-1");
+            if(prop == 'transfer_type'){
+                option.setAttribute("name","transfer_type");
+            }
             selectList.appendChild(option);
             // <option value="" disabled selected>Select your option</option>
             for (var i = 0; i < options.length; i++) {
